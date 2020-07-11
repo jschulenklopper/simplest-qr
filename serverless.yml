@@ -1,0 +1,42 @@
+service: simplest-qr
+
+plugins:
+  - serverless-python-requirements
+  - serverless-apigw-binary
+
+custom:
+  # Necessary to support binary media types (like images).
+  apigwBinary: 
+    types:
+      - '*/*' 
+
+provider:
+  name: aws
+  runtime: python3.7
+  timeout: 10
+  memorySize: 512
+  stage: dev
+  region: eu-west-1  # TODO Change this, to read parameter from CLI if this default isn't OK.
+  profile: xebia   # TODO Change this, to read parameter from CLI if this default isn't OK.
+
+package:
+  exclude:
+    - node_modules/**
+    - package-lock.json
+    - .git/**
+    - .gitignore
+    - .serverless/**
+    - www/**
+
+functions:
+  # Create a QR code (for display).
+  http_qr_create:
+    handler: handler.http_create_qr
+    events:
+      - http:
+          path: /qr/new  # Followed by `?data=some-text`
+          method: get
+          request:
+            parameters:
+              querystrings:
+                data: true
